@@ -12,6 +12,7 @@ create table if not exists private.idempotency (
   created_at  timestamptz not null default now(),
   primary key (user_id, key)
 );
+alter table private.idempotency enable row level security;
 
 -- ---------------------------------------------------------------------------
 -- Small helpers
