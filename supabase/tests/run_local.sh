@@ -8,4 +8,5 @@ $PG -d postgres -c 'drop role if exists anon, authenticated, service_role' 2>/de
 $PG -d pickup_test -f tests/supabase_stub.sql
 for f in migrations/*.sql; do case "$f" in *cron*) continue;; esac; $PG -d pickup_test -f "$f"; done
 for t in tests/test_*.sql; do echo "== $t"; $PG -d pickup_test -f "$t"; done
+if command -v deno >/dev/null; then echo "== tests/mcp_e2e.ts"; deno run -A tests/mcp_e2e.ts; echo "MCP E2E PASSED"; fi
 echo "ALL TESTS PASSED"
