@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sign in · Pickup</title>
+<link rel="stylesheet" href="../assets/pickup.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.100.0/dist/umd/supabase.js"></script>
+</head>
+<body>
+<main>
+  <div class="brand"><span class="ball"></span>Pickup</div>
+  <div class="card">
+    <div id="form">
+      <h1>Sign in</h1>
+      <p>We'll email you a link. Open it on this device to finish signing in.</p>
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+      <button id="send" class="primary">Email me a sign-in link</button>
+      <div id="msg" class="msg"></div>
+    </div>
+    <div id="done" class="hidden">
+      <h1>You're signed in</h1>
+      <p id="as"></p>
+      <button id="out">Sign out</button>
+    </div>
+  </div>
+</main>
+<script type="module">
+import { supabase, $, show } from "../assets/pickup.js";
+const params = new URLSearchParams(location.search);
+const next = params.get("next");
+const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+
+async function refresh() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session && safeNext) { location.replace(safeNext); return; }
+  show("form", !session); show("done", !!session);
+  if (session) $("as").textContent = "Signed in as " + session.user.email + ".";
+}
+supabase.auth.onAuthStateChange(() => refresh());
+refresh();
+
+$("send").onclick = async () => {
+  const email = $("email").value.trim();
+  if (!email) { $("msg").innerHTML = '<span class="err">Enter your email.</span>'; return; }
+  $("send").disabled = true;
+  const redirect = location.origin + location.pathname + (safeNext ? "?next=" + encodeURIComponent(safeNext) : "");
+  const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect } });
+  $("send").disabled = false;
+  $("msg").innerHTML = error
+    ? '<span class="err">' + error.message.replace(/</g, "&lt;") + "</span>"
+    : "Check your email for the sign-in link.";
+};
+$("out").onclick = async () => { await supabase.auth.signOut(); refresh(); };
+</script>
+</body>
+</html>

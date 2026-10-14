@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Connect an agent · Pickup</title>
+<link rel="stylesheet" href="../../assets/pickup.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.100.0/dist/umd/supabase.js"></script>
+</head>
+<body>
+<main>
+  <div class="brand"><span class="ball"></span>Pickup</div>
+  <div class="card">
+    <div id="loading"><p>Loading…</p></div>
+    <div id="error" class="hidden"><h1>Something's off</h1><p id="errtext"></p></div>
+    <div id="ask" class="hidden">
+      <h1><span id="client"></span> wants to act for you in Pickup</h1>
+      <div class="who"><div class="avatar" id="initial"></div><div><div id="client2" style="font-weight:600"></div><div class="small" id="host"></div></div></div>
+      <h2>It will be able to</h2>
+      <ul class="can">
+        <li>See your profile, availability and matches</li>
+        <li>Find courts, players and open games</li>
+        <li>Send, answer and cancel match requests within your rules</li>
+        <li>Message players in your matches</li>
+      </ul>
+      <h2>It won't be able to</h2>
+      <ul class="cannot">
+        <li>Change your agent rules or profile</li>
+        <li>Approve anything that needs your OK; those wait for you in Pickup</li>
+      </ul>
+      <p class="small">Signed in as <span id="me"></span>. You can disconnect it at any time.</p>
+      <button id="allow" class="primary">Allow</button>
+      <button id="deny">Don't allow</button>
+    </div>
+  </div>
+</main>
+<script type="module">
+import { supabase, $, show, BASE } from "../../assets/pickup.js";
+const id = new URLSearchParams(location.search).get("authorization_id");
+function fail(t) { show("loading", false); show("ask", false); show("error"); $("errtext").textContent = t; }
+
+(async () => {
+  if (!id) return fail("This link is missing its authorization request. Start connecting again from your agent.");
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    location.replace(BASE + "signin/?next=" + encodeURIComponent(location.pathname + location.search));
+    return;
+  }
+  const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(id);
+  if (error || !data) return fail(error?.message || "This request has expired. Start connecting again from your agent.");
+  if (!("authorization_id" in data) && data.redirect_url) { location.replace(data.redirect_url); return; }
+  const name = data.client?.name || data.client?.client_name || "An app";
+  let host = "";
+  try { host = new URL(data.redirect_uri).host; } catch { host = data.redirect_uri || ""; }
+  $("client").textContent = name; $("client2").textContent = name;
+  $("initial").textContent = name.trim().charAt(0).toUpperCase();
+  $("host").textContent = host ? "Returns to " + host : "";
+  $("me").textContent = session.user.email;
+  show("loading", false); show("ask");
+})();
+
+async function decide(approve) {
+  $("allow").disabled = $("deny").disabled = true;
+  const fn = approve ? supabase.auth.oauth.approveAuthorization : supabase.auth.oauth.denyAuthorization;
+  const { error } = await fn.call(supabase.auth.oauth, id);
+  if (error) { $("allow").disabled = $("deny").disabled = false; fail(error.message); }
+}
+$("allow").onclick = () => decide(true);
+$("deny").onclick = () => decide(false);
+</script>
+</body>
+</html>
