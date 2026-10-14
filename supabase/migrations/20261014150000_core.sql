@@ -529,7 +529,7 @@ begin
     perform private.emit(other, 'match_booked', jsonb_build_object('match_id', m_id),
       format('Booked: singles with %s, %s.', private.name(actor), private.slot_text(slot, private.tz(other))));
     perform private.emit(actor, 'match_booked', jsonb_build_object('match_id', m_id),
-      format('Booked: singles with %s, %s.', private.name(rq.creator_id), private.slot_text(slot, tz)));
+      format('Booked: singles with %s, %s.', private.name(other), private.slot_text(slot, tz)));
     perform private.log(actor, client, 'accept_offer', m_id, case when bypass then 'approved' else 'allowed' end, p);
     return jsonb_build_object('ok', true, 'status', 'booked', 'match_id', m_id,
       'summary', format('Booked: singles with %s, %s.', private.name(other), private.slot_text(slot, tz)));
