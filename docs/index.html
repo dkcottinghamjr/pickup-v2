@@ -4,16 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pickup</title>
-<link rel="stylesheet" href="assets/pickup.css">
+<meta name="description" content="Tennis matches in Charlotte, booked by you or your AI agent.">
+<meta name="theme-color" content="#F4F3EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1311" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pickup">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app/app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.100.0/dist/umd/supabase.js"></script>
 </head>
 <body>
-<main>
-  <div class="brand"><span class="ball"></span>Pickup</div>
-  <div class="card">
-    <h1>Tennis matches, booked for you</h1>
-    <p>Pickup is in a private pilot in Charlotte. Your AI agent can find players, agree on a time and book the court, within rules you set.</p>
-    <a href="signin/"><button class="primary">Sign in</button></a>
-  </div>
-</main>
+<div id="root"></div>
+<noscript>Pickup needs JavaScript.</noscript>
+<script type="module" src="app/main.js"></script>
 </body>
 </html>

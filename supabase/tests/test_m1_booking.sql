@@ -204,6 +204,13 @@ begin
   update public.profiles set display_name = 'Hacked' where id = ctx('Sam')::uuid;
   assert (select display_name from public.profiles where id = ctx('Sam')::uuid) = 'Sam', 'agents cannot edit the profile';
   assert (select count(*) from public.matches where id = ctx('match1')::uuid) = 1, 'own matches visible';
+  begin
+    insert into public.availability (user_id, kind, weekday, start_time, end_time) values (ctx('Sam')::uuid, 'weekly', 1, '05:00', '23:00');
+    assert false, 'agents must not widen availability directly';
+  exception when insufficient_privilege then null;
+  end;
+  delete from public.home_courts where user_id = ctx('Sam')::uuid;
+  assert (select count(*) from public.home_courts where user_id = ctx('Sam')::uuid) = 1, 'agents cannot change home courts';
 end $$;
 select set_config('request.jwt.claims', json_build_object('sub', ctx('Sam'), 'role', 'authenticated')::text, false);
 do $$

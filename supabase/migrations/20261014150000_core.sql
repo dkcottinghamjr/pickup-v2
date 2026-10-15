@@ -826,7 +826,7 @@ begin
     'ok', true,
     'incoming_offers', coalesce((select jsonb_agg(private.offer_view(o, actor) order by o.created_at)
         from public.offers o where o.to_user = actor and o.status = 'pending' and o.expires_at > now()), '[]'),
-    'waiting_on_your_player', coalesce((select jsonb_agg(jsonb_build_object('approval_id', a.id, 'summary', a.summary, 'reasons', a.reasons, 'created_at', a.created_at))
+    'waiting_on_your_player', coalesce((select jsonb_agg(jsonb_build_object('approval_id', a.id, 'client_id', a.client_id, 'summary', a.summary, 'reasons', a.reasons, 'created_at', a.created_at) order by a.created_at)
         from public.approvals a where a.user_id = actor and a.status = 'pending' and a.expires_at > now()), '[]'),
     'recent_approval_decisions', coalesce((select jsonb_agg(jsonb_build_object('approval_id', a.id, 'status', a.status, 'summary', a.summary,
                                                                               'result_summary', coalesce(a.result ->> 'summary', a.result -> 'error' ->> 'message')))
